@@ -61,11 +61,28 @@ async function extractElementFromPage(page) {
           const result = [];
 
           sections.forEach((section) => {
-            const rows = section.querySelectorAll("tbody.classified-table__body tr");
+            const rows = section.querySelectorAll(
+              "tbody.classified-table__body tr"
+            );
 
             rows.forEach((row) => {
-              const header = row.querySelector("th")?.innerText.trim()?.replace(/\s+/g, " ").trim();
-              const data = row.querySelector("td")?.innerText.trim()?.replace("square meters", "").replace("square meter", "").replace("kilowatt hour per", "").replace("vierkante meters", "").replace("kilowattuur per vierkante meters", "").replace("vierkante meter", "").replace("kilowattuur per", "").replace(/\s+/g, " ").trim();
+              const header = row
+                .querySelector("th")
+                ?.innerText.trim()
+                ?.replace(/\s+/g, " ")
+                .trim();
+              const data = row
+                .querySelector("td")
+                ?.innerText.trim()
+                ?.replace("square meters", "")
+                .replace("square meter", "")
+                .replace("kilowatt hour per", "")
+                .replace("vierkante meters", "")
+                .replace("kilowattuur per vierkante meters", "")
+                .replace("vierkante meter", "")
+                .replace("kilowattuur per", "")
+                .replace(/\s+/g, " ")
+                .trim();
               jsonData[header] = data;
             });
           });
@@ -91,26 +108,28 @@ async function extractElementFromPage(page) {
           overviewItems.forEach((item) => {
             const textElement = item.querySelector(".overview__text");
             if (textElement) {
-              const text = textElement.innerText.trim();
-              if (text.includes("bedrooms")) {
-                result.bedrooms = parseInt(text.split(" ")[0]);
-              } else if (text.includes("bathroom")) {
-                result.bathrooms = parseInt(text.split(" ")[0]);
-              } else if (text.includes("livable space")) {
-                result.livable_space = parseInt(text.split(" ")[0]);
-              } else if (text.includes("of land")) {
-                result.of_land = parseInt(text.split(" ")[0]);
-              } else if (text.includes("Floor")) {
-                result.Floor = parseInt(text.split(" ")[0]);
-              } else if (text.includes("slaapkamers")) {
-                result.slaapkamers = parseInt(text.split(" ")[0]);
+              const text = textElement?.innerText?.trim();
+              if (text) {
+                if (text.includes("bedrooms")) {
+                  result.bedrooms = parseInt(text.split(" ")[0]);
+                } else if (text.includes("bathroom")) {
+                  result.bathrooms = parseInt(text.split(" ")[0]);
+                } else if (text.includes("livable space")) {
+                  result.livable_space = parseInt(text.split(" ")[0]);
+                } else if (text.includes("of land")) {
+                  result.of_land = parseInt(text.split(" ")[0]);
+                } else if (text.includes("Floor")) {
+                  result.Floor = parseInt(text.split(" ")[0]);
+                } else if (text.includes("slaapkamers")) {
+                  result.slaapkamers = parseInt(text.split(" ")[0]);
+                } else if (text.includes("grond")) {
+                  result.badkamers = parseInt(text.split(" ")[0]);
+                } else if (text.includes("badkamers")) {
+                  result.badkamers = parseInt(text.split(" ")[0]);
+                } else if (text.includes("bewoonbare ruimte")) {
+                  result.bewoonbareRuimte = parseInt(text.split(" ")[0]);
+                }
               }
-            } else if (text.includes("grond")) {
-              result.badkamers = parseInt(text.split(" ")[0]);
-            } else if (text.includes("badkamers")) {
-              result.badkamers = parseInt(text.split(" ")[0]);
-            } else if (text.includes("bewoonbare ruimte")) {
-              result.bewoonbareRuimte = parseInt(text.split(" ")[0]);
             }
           });
 
@@ -121,19 +140,40 @@ async function extractElementFromPage(page) {
         delete jsonData.undefined;
         delete jsonData.title;
         delete jsonData[""];
-        jsonData["description"] = document.querySelector(".classified__description")?.innerText?.replace(/\s+/g, " ").trim();
+        jsonData["description"] = document
+          .querySelector(".classified__description")
+          ?.innerText?.replace(/\s+/g, " ")
+          .trim();
         jsonData["link"] = window.location.href;
         jsonData["immowebCode"] = window.location.href.split("/").pop();
-        jsonData["Price"] = jsonData["Price"]?.split(" ")?.slice(2, 4).join(" ");
-        jsonData["Prijs"] = jsonData["Prijs"]?.split(" ")?.slice(2, 4).join(" ");
-        jsonData["Cadastral income"] = jsonData["Cadastral income"]?.split(" ")?.slice(2, 4).join(" ");
-        jsonData["Kadastraal inkomen"] = jsonData["Kadastraal inkomen"]?.split(" ")?.slice(2, 4).join(" ");
-        let json = document.querySelector("#container-main-content > div.classified > script").innerHTML.trim().split("window.classified = ")[1].split(";\n            /* START: AB")[0];
+        jsonData["Price"] = jsonData["Price"]
+          ?.split(" ")
+          ?.slice(2, 4)
+          .join(" ");
+        jsonData["Prijs"] = jsonData["Prijs"]
+          ?.split(" ")
+          ?.slice(2, 4)
+          .join(" ");
+        jsonData["Cadastral income"] = jsonData["Cadastral income"]
+          ?.split(" ")
+          ?.slice(2, 4)
+          .join(" ");
+        jsonData["Kadastraal inkomen"] = jsonData["Kadastraal inkomen"]
+          ?.split(" ")
+          ?.slice(2, 4)
+          .join(" ");
+        let json = document
+          .querySelector("#container-main-content > div.classified > script")
+          .innerHTML.trim()
+          .split("window.classified = ")[1]
+          .split(";\n            /* START: AB")[0];
         json = JSON.parse(json);
         let addressData = {};
-        Object.keys(json.property.location).forEach((e) => (addressData["adress_" + e] = json.property.location[e]));
+        Object.keys(json.property.location).forEach(
+          (e) => (addressData["adress_" + e] = json.property.location[e])
+        );
         jsonData = { ...jsonData, ...addressData };
-        let images = json.media.pictures.map((e, i) => {
+        json.media.pictures.map((e, i) => {
           jsonData["image " + (i + 1)] = e.largeUrl;
           return e.largeUrl;
         });
@@ -151,25 +191,6 @@ async function extractElementFromPage(page) {
   }
 }
 
-async function autoScroll(page) {
-  await page.evaluate(async () => {
-    await new Promise((resolve) => {
-      let totalHeight = 0;
-      let distance = 100; // distance to scroll each step in pixels
-      let timer = setInterval(() => {
-        let scrollHeight = document.body.scrollHeight;
-        window.scrollBy(0, distance);
-        totalHeight += distance;
-
-        if (totalHeight >= scrollHeight) {
-          clearInterval(timer);
-          resolve();
-        }
-      }, 50); // time between scrolls in milliseconds
-    });
-  });
-}
-
 async function scrape(browser, page) {
   try {
     if (index < indexLimit) {
@@ -182,8 +203,21 @@ async function scrape(browser, page) {
       var data = await extractElementFromPage(page);
       index = index + 1;
       fs.writeFileSync(`./currentIndex_Links.txt`, `${index}`);
-      fs.writeFileSync(`./jsons/${index}.json`, data ? JSON.stringify(data) : "");
-      console.log(new Date().toLocaleString() + " Downloaded   : " + JSON.stringify(data).length + " : " + index + " / " + indexLimit + "  " + (data && Object.keys(data).length ? "- Full" : "- Empty"));
+      fs.writeFileSync(
+        `./jsons/${index}.json`,
+        data ? JSON.stringify(data) : ""
+      );
+      console.log(
+        new Date().toLocaleString() +
+          " Downloaded   : " +
+          JSON.stringify(data).length +
+          " : " +
+          index +
+          " / " +
+          indexLimit +
+          "  " +
+          (data && Object.keys(data).length ? "- Full" : "- Empty")
+      );
       await page.waitForTimeout(timeout);
       await scrape(browser, page);
     } else {
