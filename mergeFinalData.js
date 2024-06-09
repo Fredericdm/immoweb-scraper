@@ -10,8 +10,8 @@ fs.readdir(inputfolder, (err, files) => {
     return;
   }
 
-  Files = files;
-  console.log("Found " + Files.length + " Total Files in " + inputfolder);
+  Files = files.filter(file => file.endsWith(".json"));
+  console.log("Found " + Files.length + " JSON Files in " + inputfolder);
   if (Files.length === 0) {
     input_stream.write("]");
     input_stream.end();
@@ -30,12 +30,12 @@ const readFileContent = (index) => {
     if (content) {
       try {
         content = JSON.parse(content);
-        input_stream.write(JSON.stringify(content));
+        input_stream.write(JSON.stringify(content, null, 2));
         if (index < Files.length - 1) {
           input_stream.write(",");
         }
       } catch (error) {
-        console.log("Error parsing JSON:", error);
+        console.log(`Error parsing JSON in file ${Files[index]}:`, error);
       }
     }
 
@@ -47,4 +47,6 @@ const readFileContent = (index) => {
       console.log("Done");
     }
   });
+};
+
 };
