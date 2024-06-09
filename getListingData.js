@@ -37,7 +37,7 @@ async function run() {
     });
 
     await page.goto(
-      "https://www.immoweb.be/en/classified/apartment/for-sale/mechelen/2800/11444073",
+      "https://www.immoweb.be/nl/zoekertje/appartement/te-koop/mechelen/2800/11444073",
       {
         waitUntil: "load",
         timeout: 60000, // Set page-specific timeout to 60 seconds
