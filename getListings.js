@@ -9,7 +9,7 @@ var fs = require("fs");
 async function run() {
   puppeteer
     .launch({
-      headless: false,
+      headless: true,
       slowMo: 250,
       defaultViewport: null,
       executablePath: require("puppeteer").executablePath(),
@@ -49,7 +49,7 @@ async function run() {
       });
 
       await page.goto(
-        "https://www.immoweb.be/en/search/house/for-sale?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page=1",
+        "https://www.immoweb.be/nl/zoeken/huis/te-koop?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&orderBy=relevance&page=",
         {
           waitUntil: "load",
           timeout: 0,
@@ -85,7 +85,7 @@ scrape = async () => {
       //   console.log(new Date().toLocaleString() + " Asking for Id: " + index);
 
       await page.goto(
-        "https://www.immoweb.be/en/search/house/for-sale?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page=" + index,
+        "https://www.immoweb.be/nl/zoeken/huis/te-koop?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page=" + index,
         {
           waitUntil: "load",
           timeout: 0,
