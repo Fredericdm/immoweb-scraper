@@ -9,7 +9,7 @@ var fs = require("fs");
 async function run() {
   puppeteer
     .launch({
-      headless: false,
+      headless: true,
       slowMo: 250,
       defaultViewport: null,
       executablePath: require("puppeteer").executablePath(),
