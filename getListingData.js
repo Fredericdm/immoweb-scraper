@@ -9,7 +9,7 @@ var fs = require("fs");
 async function run() {
   puppeteer
     .launch({
-      headless: true,
+      headless: false,
       slowMo: 250,
       defaultViewport: null,
       executablePath: require("puppeteer").executablePath(),
@@ -31,7 +31,15 @@ async function run() {
 
       page.on("request", (request) => {
         if (
-  
+          // request.url().indexOf("googletagmanager") > -1 ||
+          // request.url().indexOf("google-analytics") > -1 ||
+          // request.url().indexOf("js.monitor.azure.com") > -1 ||
+          // request.url().indexOf("gstatic.com/recaptcha/") > -1 ||
+          // request.url().indexOf("google.com/recaptcha") > -1 ||
+          // request.url().indexOf("appinsights") > -1 ||
+          // request.resourceType() === "image" ||
+          // request.resourceType() === "stylesheet" ||
+          // request.resourceType() === "font"
           false
         ) {
           request.abort();
@@ -55,8 +63,6 @@ async function run() {
 extractElementFromPage = async () => {
   return await page.evaluate(() => {
     return new Promise(async (resolve) => {
-      // Fonction pour convertir les éléments HTML en JSON
-
       var jsonData = {};
       function convertHtmlToJson1() {
         const sections = document.querySelectorAll(".accordion--section");
@@ -77,7 +83,12 @@ extractElementFromPage = async () => {
               .querySelector("td")
               ?.innerText.trim()
               ?.replace("square meters", "")
+              ?.replace("square meter", "")
               .replace("kilowatt hour per", "")
+              .replace("vierkante meters", "")
+              .replace("kilowattuur per vierkante meters", "")
+              .replace("vierkante meter", "")
+              .replace("kilowattuur per", "")
               .replace(/\s+/g, " ")
               .trim();
             jsonData[header] = data;
@@ -118,7 +129,15 @@ extractElementFromPage = async () => {
               result.of_land = parseInt(text.split(" ")[0]);
             } else if (text.includes("Floor")) {
               result.Floor = parseInt(text.split(" ")[0]);
+            } else if (text.includes("slaapkamers")) {
+              result.slaapkamers = parseInt(text.split(" ")[0]);
             }
+          } else if (text.includes("grond")) {
+            result.badkamers = parseInt(text.split(" ")[0]);
+          } else if (text.includes("badkamers")) {
+            result.badkamers = parseInt(text.split(" ")[0]);
+          } else if (text.includes("bewoonbare ruimte")) {
+            result.bewoonbareRuimte = parseInt(text.split(" ")[0]);
           }
         });
 
@@ -131,12 +150,18 @@ extractElementFromPage = async () => {
       delete jsonData.title;
       delete jsonData[""];
       jsonData["description"] = document
-        .querySelector(".classified__description")?.innerText?.replace(/\s+/g, " ")
+        .querySelector(".classified__description")
+        ?.innerText?.replace(/\s+/g, " ")
         .trim();
       jsonData["link"] = window.location.href;
       jsonData["immowebCode"] = window.location.href.split("/").pop();
       jsonData["Price"] = jsonData["Price"]?.split(" ")?.slice(2, 4).join(" ");
+      jsonData["Prijs"] = jsonData["Prijs"]?.split(" ")?.slice(2, 4).join(" ");
       jsonData["Cadastral income"] = jsonData["Cadastral income"]
+        ?.split(" ")
+        ?.slice(2, 4)
+        .join(" ");
+      jsonData["Kadastraal inkomen"] = jsonData["Kadastraal inkomen"]
         ?.split(" ")
         ?.slice(2, 4)
         .join(" ");
@@ -165,8 +190,24 @@ extractElementFromPage = async () => {
   });
 };
 
+async function autoScroll() {
+  await page.evaluate(async () => {
+    await new Promise((resolve, reject) => {
+      let totalHeight = 0;
+      let distance = 100; // distance to scroll each step in pixels
+      let timer = setInterval(() => {
+        let scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
 
- 
+        if (totalHeight >= scrollHeight) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 50); // time between scrolls in milliseconds
+    });
+  });
+}
 
 scrape = async () => {
   try {
@@ -181,8 +222,8 @@ scrape = async () => {
       // await autoScroll( );
 
       var data = await extractElementFromPage();
-       index = index + 1;
-      fs.writeFileSync(`./currentIndex.txt`, `${index}`);
+      index = index + 1;
+      fs.writeFileSync(`./currentIndex_Links.txt`, `${index}`);
       fs.writeFileSync(
         `./jsons/${index}.json`,
         data ? JSON.stringify(data) : ""
@@ -212,7 +253,7 @@ scrape = async () => {
   }
 };
 
-fs.readFile("./currentIndex.txt", (err, current) => {
+fs.readFile("./currentIndex_Links.txt", (err, current) => {
   if (err) {
     throw err;
   }

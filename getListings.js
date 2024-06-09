@@ -1,4 +1,3 @@
-var basePath = "https://www.immoweb.be/en/search/house/for-sale?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page="
 var timeout = 0;
 var index = null;
 var indexLimit = null;
@@ -10,7 +9,7 @@ var fs = require("fs");
 async function run() {
   puppeteer
     .launch({
-      headless: true,
+      headless: false,
       slowMo: 250,
       defaultViewport: null,
       executablePath: require("puppeteer").executablePath(),
@@ -50,7 +49,7 @@ async function run() {
       });
 
       await page.goto(
-        basePath +"1",
+        "https://www.immoweb.be/en/search/house/for-sale?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page=1",
         {
           waitUntil: "load",
           timeout: 0,
@@ -86,7 +85,7 @@ scrape = async () => {
       //   console.log(new Date().toLocaleString() + " Asking for Id: " + index);
 
       await page.goto(
-        basePath + index,
+        "https://www.immoweb.be/en/search/house/for-sale?countries=BE&provinces=ANTWERP,FLEMISH_BRABANT&priceType=SALE_PRICE&orderBy=relevance&page=" + index,
         {
           waitUntil: "load",
           timeout: 0,
@@ -94,7 +93,7 @@ scrape = async () => {
       );
       var data =  await extractElementFromPage()
       index = index + 1;
-      fs.writeFileSync(`./currentIndex_Links.txt`, `${index}`);
+      fs.writeFileSync(`./currentIndex.txt`, `${index}`);
       allData = [...allData,...data]
       console.log(
         new Date().toLocaleString() +
@@ -119,11 +118,12 @@ scrape = async () => {
     }
   } catch (error) {
     console.log(error);
-    process.exit(1);
+    scrape()
+    // process.exit(1);
   }
 };
 
-fs.readFile("./currentIndex_Links.txt", (err, current) => {
+fs.readFile("./currentIndex.txt", (err, current) => {
   if (err) {
     throw err;
   }
