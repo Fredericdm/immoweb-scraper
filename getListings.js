@@ -49,7 +49,7 @@ async function run() {
       });
 
       await page.goto(
-        "https://www.immoweb.be/nl/zoeken/huis/te-koop?countries=BE&orderBy=relevance&page=",
+        "https://www.immoweb.be/nl/zoeken/huis/te-koop/herselt/2230?countries=BE&orderBy=relevance&page=",
         {
           waitUntil: "load",
           timeout: 0,
@@ -85,7 +85,7 @@ scrape = async () => {
       //   console.log(new Date().toLocaleString() + " Asking for Id: " + index);
 
       await page.goto(
-        "https://www.immoweb.be/nl/zoeken/huis/te-koop?countries=BE&orderBy=relevance&page=" + index,
+        "https://www.immoweb.be/nl/zoeken/huis/te-koop/herselt/2230?countries=BE&orderBy=relevance&page=" + index,
         {
           waitUntil: "load",
           timeout: 0,
